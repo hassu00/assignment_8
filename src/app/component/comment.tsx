@@ -6,6 +6,7 @@ interface Comment {
   text: string;
   date: number;
   author: string;
+  upvote:number;
 }
 
 const CommentComponent = () => {
@@ -13,15 +14,20 @@ const CommentComponent = () => {
   const [author, setAuthor] = useState("");
   const [commentState, setCommentState] = useState<Comment[]>([]);
   const [isClient, setIsClient] = useState(false); // Prevent SSR errors
-  const [showUpVote, setShowUpVote] = useState(0);
+  // const [showUpVote, setShowUpVote] = useState(0);
 
 
-  const HandleUpVote = () => {
-    setShowUpVote(prevcount => prevcount + 1);
+  const HandleUpVote = (commentIndex:number) => {
+    const updatedComments = [...commentState];
+    updatedComments[commentIndex].upvote += 1;
+    console.log("After upvote:", updatedComments);
+    setCommentState(updatedComments);
   }
-  const handleDownVote = () => {
-    setShowUpVote(prevCount => Math.max(prevCount - 1, 0));
-  };
+  const handleDownVote = (commentIndex:number) => {
+    const updatedComments = [...commentState];
+    updatedComments[commentIndex].upvote = Math.max(updatedComments[commentIndex].upvote - 1, 0);
+    setCommentState(updatedComments);
+   };
 
 
   // Ensure this code runs only on the client side
@@ -47,6 +53,7 @@ const CommentComponent = () => {
       text,
       date: Date.now(),
       author,
+      upvote: 0,
     };
 
     setCommentState((prev) => [...prev, newComment]);
@@ -85,6 +92,8 @@ const CommentComponent = () => {
         </button>
       </div>
 
+<div>
+
       {commentState.map((comment, index) => (
         <div key={index} className="border-t-[1px] border-slate-300 w-[80%] mx-auto p-4 text-black">
           <p className="text-base font-medium">{comment.author}</p>
@@ -92,9 +101,8 @@ const CommentComponent = () => {
             {new Date(comment.date).toLocaleDateString()}
           </p>
           <p className="text-[20px] leading-[33px] font-medium">{comment.text}</p>
-        </div>
-      ))}
-                <div className="flex ml-[134px] bg-blue-400 p-1 w-[140px] rounded-full mb-1">
+        
+                <div className="flex ml-[134px] bg-blue-400 p-1 w-[140px] rounded-full mb-1 mt-3">
                   <div className="flex">
                     <Image
                       src="/images/upvote.svg"
@@ -103,11 +111,11 @@ const CommentComponent = () => {
                       height={33}
                       objectFit="cover"
                       className="cursor-pointer mr-3 ml-2"
-                      onClick={() => HandleUpVote()}
-                    />
+                      onClick={() => HandleUpVote(index)}
+                      />
                     <p className="text-[#ffffff] text-[18px] leading-6 mr-[16px] flex justify-center items-center">
                       {" "}
-                      {showUpVote}
+                      {comment.upvote}
                     </p>
                   </div>
                   <span className=" border-l-[1px] border-white h-[27px] mt-[3px] items-center flex justify-center"></span>
@@ -117,9 +125,11 @@ const CommentComponent = () => {
                     width={33}
                     height={33}
                     className="cursor-pointer ml-2"
-                    onClick={() => handleDownVote()}
-                  />
+                    onClick={() => handleDownVote(index)}
+                    />
                 </div>
+                </div>))}
+                    </div>
     </div>
   );
 };
